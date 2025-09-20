@@ -23,17 +23,28 @@ public class JwtService {
 
 
     public JwtService(@Value("${JWT_SECRET:}") String secret,
-                      @Value("${JWT_EXPIRATION:0}") long expiration) {
+                      @Value("${JWT_EXPIRATION:}") String expiration) {
         if (secret.isEmpty()) {
             log.error("JWT_SECRET environment variable is not set");
             throw new IllegalStateException("JWT_SECRET environment variable is required");
         }
-        if (expiration <= 0) {
+        if (expiration.isEmpty()) {
             log.error("JWT_EXPIRATION environment variable is not set");
+            throw new IllegalStateException("JWT_EXPIRATION environment variable is required");
+        }
+        long expirationLong;
+        try {
+            expirationLong = Long.parseLong(expiration);
+        } catch (NumberFormatException e) {
+            log.error("JWT_EXPIRATION environment variable is not a number");
+            throw new IllegalStateException("JWT_EXPIRATION environment variable is not a number");
+        }
+        if (expirationLong <= 0) {
+            log.error("JWT_EXPIRATION must be greater than 0");
             throw new IllegalStateException("JWT_EXPIRATION must be greater than 0");
         }
         this.secret = secret;
-        this.expiration = expiration;
+        this.expiration = expirationLong;
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
