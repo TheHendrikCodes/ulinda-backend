@@ -1,0 +1,9 @@
+package org.ulinda.exceptions;
+
+public enum ErrorCode {
+    GENERAL_ERROR,
+    INTERNAL_SERVER_ERROR,
+    USER_ALREADY_EXISTS,
+    CONTROLLER_VALIDATION_EXCEPTION,
+    VALIDATION_EXCEPTION
+}

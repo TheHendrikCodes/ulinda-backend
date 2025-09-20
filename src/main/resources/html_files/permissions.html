@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Permissions Table</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .model-group th {
+            background-color: #2196F3;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.5);
+            cursor: pointer;
+        }
+        button {
+            display: block;
+            width: 200px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<h1>User Permissions Management</h1>
+<form action="/submit-permissions" method="post"> <!-- Replace with your actual submit endpoint -->
+    <table>
+        <thead>
+        <tr>
+            <th rowspan="2">User</th>
+            <th colspan="3" class="model-group">Employees</th>
+            <th colspan="3" class="model-group">Motorbike</th>
+            <th colspan="3" class="model-group">Licenses</th>
+        </tr>
+        <tr>
+            <th>View</th>
+            <th>Edit</th>
+            <th>Add</th>
+            <th>View</th>
+            <th>Edit</th>
+            <th>Add</th>
+            <th>View</th>
+            <th>Edit</th>
+            <th>Add</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Example users; add more rows as needed -->
+        <tr>
+            <td>User1</td>
+            <td><input type="checkbox" name="user1_employees_view"></td>
+            <td><input type="checkbox" name="user1_employees_edit"></td>
+            <td><input type="checkbox" name="user1_employees_add"></td>
+            <td><input type="checkbox" name="user1_motorbike_view"></td>
+            <td><input type="checkbox" name="user1_motorbike_edit"></td>
+            <td><input type="checkbox" name="user1_motorbike_add"></td>
+            <td><input type="checkbox" name="user1_licenses_view"></td>
+            <td><input type="checkbox" name="user1_licenses_edit"></td>
+            <td><input type="checkbox" name="user1_licenses_add"></td>
+        </tr>
+        <tr>
+            <td>User2</td>
+            <td><input type="checkbox" name="user2_employees_view"></td>
+            <td><input type="checkbox" name="user2_employees_edit"></td>
+            <td><input type="checkbox" name="user2_employees_add"></td>
+            <td><input type="checkbox" name="user2_motorbike_view"></td>
+            <td><input type="checkbox" name="user2_motorbike_edit"></td>
+            <td><input type="checkbox" name="user2_motorbike_add"></td>
+            <td><input type="checkbox" name="user2_licenses_view"></td>
+            <td><input type="checkbox" name="user2_licenses_edit"></td>
+            <td><input type="checkbox" name="user2_licenses_add"></td>
+        </tr>
+        <tr>
+            <td>User3</td>
+            <td><input type="checkbox" name="user3_employees_view"></td>
+            <td><input type="checkbox" name="user3_employees_edit"></td>
+            <td><input type="checkbox" name="user3_employees_add"></td>
+            <td><input type="checkbox" name="user3_motorbike_view"></td>
+            <td><input type="checkbox" name="user3_motorbike_edit"></td>
+            <td><input type="checkbox" name="user3_motorbike_add"></td>
+            <td><input type="checkbox" name="user3_licenses_view"></td>
+            <td><input type="checkbox" name="user3_licenses_edit"></td>
+            <td><input type="checkbox" name="user3_licenses_add"></td>
+        </tr>
+        <!-- Add more user rows here -->
+        </tbody>
+    </table>
+    <button type="submit">Save Permissions</button>
+</form>
+</body>
+</html>

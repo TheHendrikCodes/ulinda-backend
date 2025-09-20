@@ -1,0 +1,46 @@
+package org.ulinda.services;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.ulinda.entities.ErrorLog;
+import org.ulinda.exceptions.ErrorResponse;
+import org.ulinda.repositories.ErrorRepository;
+
+import java.util.concurrent.CompletableFuture;
+
+@Service
+@Slf4j
+public class ErrorService {
+
+    @Autowired
+    private ErrorRepository errorRepository;
+
+    /**
+     * Save error asynchronously - doesn't block the response
+     */
+    @Async
+    public void saveErrorAsync(Exception e, ErrorResponse er) {
+        try {
+            ErrorLog error = new ErrorLog();
+            error.setMessage(e.getMessage());
+            error.setErrorCode(er.getErrorCode());
+            error.setStackTrace(getStackTraceAsString(e));
+            error.setErrorIdentifier(er.getErrorIdentifier());
+            errorRepository.save(error);
+            log.debug("Error log saved asynchronously with ID: {}", error.getId());
+
+        } catch (Exception ex) {
+            // Never let database save errors break the exception handling
+            log.error("Failed to save error log asynchronously: {}", ex.getMessage(), ex);
+        }
+    }
+
+    private String getStackTraceAsString(Exception e) {
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
+    }
+}
