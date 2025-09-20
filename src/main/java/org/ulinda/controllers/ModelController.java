@@ -15,7 +15,7 @@ import org.ulinda.services.ModelService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/api/v1")
 @Slf4j
 public class ModelController {
 

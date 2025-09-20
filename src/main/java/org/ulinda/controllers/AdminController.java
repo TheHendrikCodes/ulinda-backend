@@ -12,7 +12,7 @@ import org.ulinda.services.UserService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
