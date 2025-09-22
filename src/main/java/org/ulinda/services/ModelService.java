@@ -428,6 +428,10 @@ public class ModelService {
     @Transactional(readOnly = true)
     public GetRecordsResponse getRecords(GetRecordsRequest request, UUID sourceModelId) {
 
+        if (request.getQueryType() == null) {
+            throw new FrontendException("Query Type not supplied", true);
+        }
+
         // Validate limit
         int limit = request.getLimit();
         if (limit <= 0 || limit > 1000) {

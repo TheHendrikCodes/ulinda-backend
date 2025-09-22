@@ -22,6 +22,7 @@ public class UlindaApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         startupService.runStartup();
+        log.info("Loading Demo Data...");
         startupService.loadDemoData();
         log.info("Completed Starting Up Service");
     }

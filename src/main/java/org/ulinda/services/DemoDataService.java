@@ -14,6 +14,7 @@ import org.ulinda.dto.RecordDto;
 import org.ulinda.dto.GetModelResponse;
 import org.ulinda.dto.ModelLinkTarget;
 import org.ulinda.enums.FieldType;
+import org.ulinda.enums.QueryType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -510,11 +511,13 @@ public class DemoDataService {
 
         // Get all employee records
         GetRecordsRequest employeeRequest = new GetRecordsRequest();
+        employeeRequest.setQueryType(QueryType.ALL_RECORDS);
         employeeRequest.setLimit(1000);
         GetRecordsResponse employeesResponse = modelService.getRecords(employeeRequest, employeesModelId);
 
         // Get all payslip records
         GetRecordsRequest payslipRequest = new GetRecordsRequest();
+        payslipRequest.setQueryType(QueryType.ALL_RECORDS);
         payslipRequest.setLimit(1000);
         GetRecordsResponse payslipsResponse = modelService.getRecords(payslipRequest, payslipsModelId);
 
