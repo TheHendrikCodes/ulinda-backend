@@ -513,12 +513,14 @@ public class DemoDataService {
         GetRecordsRequest employeeRequest = new GetRecordsRequest();
         employeeRequest.setQueryType(QueryType.ALL_RECORDS);
         employeeRequest.setLimit(1000);
+        employeeRequest.setSortField("created_at");
         GetRecordsResponse employeesResponse = modelService.getRecords(employeeRequest, employeesModelId);
 
         // Get all payslip records
         GetRecordsRequest payslipRequest = new GetRecordsRequest();
         payslipRequest.setQueryType(QueryType.ALL_RECORDS);
         payslipRequest.setLimit(1000);
+        payslipRequest.setSortField("created_at");
         GetRecordsResponse payslipsResponse = modelService.getRecords(payslipRequest, payslipsModelId);
 
         // Link each employee to exactly one payslip (1:1 relationship)
@@ -585,11 +587,15 @@ public class DemoDataService {
         // Get all employee records
         GetRecordsRequest employeeRequest = new GetRecordsRequest();
         employeeRequest.setLimit(1000);
+        employeeRequest.setQueryType(QueryType.ALL_RECORDS);
+        employeeRequest.setSortField("created_at");
         GetRecordsResponse employeesResponse = modelService.getRecords(employeeRequest, employeesModelId);
 
         // Get all motorbike records
         GetRecordsRequest motorbikeRequest = new GetRecordsRequest();
         motorbikeRequest.setLimit(1000);
+        motorbikeRequest.setQueryType(QueryType.ALL_RECORDS);
+        motorbikeRequest.setSortField("created_at");
         GetRecordsResponse motorbikesResponse = modelService.getRecords(motorbikeRequest, motorbikesModelId);
 
         // Link each employee to 50 random motorbikes
