@@ -250,7 +250,7 @@ public class StartupService {
     }
 
     public void loadDemoData() {
-        //demoDataService.loadDemoData();
+        demoDataService.loadDemoData();
         //log.info("Loaded Demo Data");
     }
 }

@@ -1,9 +1,11 @@
 package org.ulinda.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.ulinda.dto.*;
 import org.ulinda.entities.Model;
 import org.ulinda.entities.User;
@@ -22,6 +24,9 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class UserService {
+
+    @Value("${ADMIN_SECRET:}")
+    private String adminUserPassword;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -43,8 +48,11 @@ public class UserService {
     }
 
     public UUID createAdminUser() {
+        if (StringUtils.isEmpty(adminUserPassword)) {
+            throw new RuntimeException("ADMIN_SECRET environment variable not set");
+        }
         if (!userRepository.existsByUsername("admin")) {
-            String encryptedPassword = passwordEncoder.encode("admin");
+            String encryptedPassword = passwordEncoder.encode(adminUserPassword);
             User admin = new User("admin", encryptedPassword, "Admin", "User", true, true);
             userRepository.save(admin);
             UUID userId = admin.getId();
