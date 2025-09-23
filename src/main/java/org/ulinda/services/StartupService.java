@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @Slf4j
@@ -21,6 +22,8 @@ public class StartupService {
 
     @Autowired
     private DemoDataService demoDataService;
+
+    private AtomicBoolean isNew =  new AtomicBoolean(false);
 
     private boolean tableExists(String tableName) {
         String sql = """
@@ -225,6 +228,7 @@ public class StartupService {
         //createErrorLogTable();
         log.info("Checking if users table exists");
         if (!tableExists("users")) {
+            isNew.set(true);
             createUsersTable();
             log.info("Users table created successfully");
             log.info("Creating admin user");
@@ -250,7 +254,9 @@ public class StartupService {
     }
 
     public void loadDemoData() {
-        demoDataService.loadDemoData();
+        if (isNew.get()) {
+            demoDataService.loadDemoData();
+        }
         //log.info("Loaded Demo Data");
     }
 }
