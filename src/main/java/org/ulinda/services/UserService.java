@@ -38,7 +38,6 @@ public class UserService {
     private final UserModelPermissionRepository userModelPermissionRepository;
     private final ModelRepository modelRepository;
     private final CurrentUserTokenRepository currentUserTokenRepository;
-    private final JwtService jwtService;
 
     public UserService(
             UserRepository userRepository,
@@ -54,7 +53,6 @@ public class UserService {
         this.userModelPermissionRepository = userModelPermissionRepository;
         this.modelRepository = modelRepository;
         this.currentUserTokenRepository = currentUserTokenRepository;
-        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -118,7 +116,7 @@ public class UserService {
     }
 
     @Transactional
-    public LoginResponse forcedChangePassword(String username, String oldPassword , String newPassword) {
+    public void forcedChangePassword(String username, String oldPassword , String newPassword) {
 
         if  (!StringUtils.hasText(username) || !StringUtils.hasText(oldPassword) || !StringUtils.hasText(newPassword)) {
             throw new RuntimeException("Invalid parameters");
@@ -143,17 +141,6 @@ public class UserService {
 
         //Delete all tokens for user
         currentUserTokenRepository.deleteAllByUserId(user.getId());
-
-        String newToken = jwtService.generateToken(user.getId().toString());
-        CurrentUserToken token = new CurrentUserToken();
-        token.setUserId(user.getId());
-        token.setCurrentToken(newToken);
-        token.setCreatedAt(Instant.now());
-        LoginResponse response = new LoginResponse();
-
-        //response.setUserId(user.getId());
-        response.setToken(newToken);
-        return response;
     }
 
     @Transactional(readOnly = true)

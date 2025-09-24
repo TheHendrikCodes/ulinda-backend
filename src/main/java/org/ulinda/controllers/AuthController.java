@@ -63,9 +63,7 @@ public class AuthController {
     }
 
     @PostMapping("/forced-change-password")
-    public ResponseEntity<LoginResponse> forcedChangePassword(@Valid @RequestBody ForcedChangePasswordRequest request) {
-        LoginResponse response = userService.forcedChangePassword(request.getUsername(), request.getOldPassword(), request.getNewPassword());
-        response.setExpiresIn(jwtExpiration);
-        return ResponseEntity.ok(response);
+    public void forcedChangePassword(@Valid @RequestBody ForcedChangePasswordRequest request) {
+        userService.forcedChangePassword(request.getUsername(), request.getOldPassword(), request.getNewPassword());
     }
 }
