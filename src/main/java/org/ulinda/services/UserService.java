@@ -47,6 +47,7 @@ public class UserService {
         this.modelRepository = modelRepository;
     }
 
+    @Transactional
     public UUID createAdminUser() {
         if (StringUtils.isEmpty(adminUserPassword)) {
             throw new RuntimeException("ULINDA_ADMIN_SECRET environment variable not set");
@@ -64,6 +65,7 @@ public class UserService {
         throw new RuntimeException("Admin user already exists");
     }
 
+    @Transactional
     public CreateUserResponse createUser(CreateUserRequest createUserRequest) {
         String username = createUserRequest.getUsername().toLowerCase();
         String password = passwordService.generatePassword();
@@ -79,22 +81,47 @@ public class UserService {
         throw new FrontendException("Username already exists", ErrorCode.USER_ALREADY_EXISTS, true);
     }
 
+    @Transactional(readOnly = true)
     public boolean validateUser(String username, String password) {
         username = username.toLowerCase();
         Optional<User> user = userRepository.findByUsername(username);
         return user.isPresent() && passwordEncoder.matches(password, user.get().getPassword());
     }
 
-    public String getUserId(String username) {
+    @Transactional(readOnly = true)
+    public boolean validateCurrentToken(UUID uuid, String token) {
+        User user = userRepository.findById(uuid).orElseThrow(() -> new RuntimeException("User not found"));
+        if (!StringUtils.hasText(token)) {
+            throw new RuntimeException("Token is empty");
+        }
+        if (!StringUtils.hasText(user.getCurrentToken())) {
+            throw new RuntimeException("User has not logged in before");
+        }
+        if (user.getCurrentToken().equals(token)) {
+            return true;
+        }
+        throw new FrontendException("Invalid token", true);
+    }
+
+    @Transactional
+    public void saveNewToken(UUID uuid, String newToken) {
+        User user = userRepository.findById(uuid).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setCurrentToken(newToken);
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UUID getUserId(String username) {
         username = username.toLowerCase();
         Optional<User> user = userRepository.findByUsername(username);
         if (user.isPresent()) {
-            return user.get().getId().toString();
+            return user.get().getId();
         } else {
             throw new RuntimeException("Username not found");
         }
     }
 
+    @Transactional(readOnly = true)
     public List<UserDto> getUsers() {
         List<UserDto> users = new ArrayList<>();
         userRepository.findAll().forEach(user -> {
@@ -110,6 +137,7 @@ public class UserService {
         return users;
     }
 
+    @Transactional(readOnly = true)
     public GetUserResponse getUser(UUID userId) {
         GetUserResponse response = new GetUserResponse();
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found: " + userId));
@@ -122,6 +150,7 @@ public class UserService {
         return response;
     }
 
+    @Transactional(readOnly = true)
     public GetUserModelPermissionsResponse getUserModelPermissions(UUID userId) {
         GetUserModelPermissionsResponse response = new GetUserModelPermissionsResponse();
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found: " + userId));

@@ -71,6 +71,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (userId != null && isAuthenticated) {
             try {
+
+                //Validate the current token:
+                userService.validateCurrentToken(userId, jwt);
+
                 //Check is user is ADMIN user
                 boolean isAdmin = false;
                 org.ulinda.dto.GetUserResponse user = userService.getUser(userId);

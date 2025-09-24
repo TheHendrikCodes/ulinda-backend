@@ -37,18 +37,24 @@ public class StartupService {
     }
 
     private void createUsersTable() {
-            String createSql = """
-                CREATE TABLE users (
-                    id UUID DEFAULT gen_random_uuid() PRIMARY KEY NOT NULL,
-                    username TEXT NOT NULL,
-                    password TEXT NOT NULL,
-                    name TEXT,
-                    surname TEXT,
-                    can_create_models BOOLEAN NOT NULL,
-                    is_admin_user BOOLEAN NOT NULL
-                )
-                """;
-            jdbcTemplate.execute(createSql);
+        String createSql = """
+            CREATE TABLE users (
+                id UUID DEFAULT gen_random_uuid() PRIMARY KEY NOT NULL,
+                username TEXT NOT NULL,
+                password TEXT NOT NULL,
+                name TEXT,
+                surname TEXT,
+                can_create_models BOOLEAN NOT NULL,
+                is_admin_user BOOLEAN NOT NULL,
+                current_token TEXT
+            )
+            """;
+        jdbcTemplate.execute(createSql);
+
+        String createIndexSql = """
+            CREATE UNIQUE INDEX idx_users_username ON users (username)
+        """;
+        jdbcTemplate.execute(createIndexSql);
     }
 
     private void createModelsTable() {
@@ -83,6 +89,8 @@ public class StartupService {
                     );
         """;
         jdbcTemplate.execute(createSql);
+        String index = " create index idx_fields_model_id on fields (model_id );";
+        jdbcTemplate.execute(index);
     }
 
     private void createErrorLogTable() {
@@ -160,11 +168,6 @@ public class StartupService {
         jdbcTemplate.execute(createSql);
     }
 
-    private void createTableIndexes() {
-        String index = " create index idx_fields_model_id on fields (model_id );";
-        jdbcTemplate.execute(index);
-    }
-
     private void createModelPermissionsTable() {
         String createSql = """
             CREATE TABLE user_model_permissions (
@@ -224,7 +227,7 @@ public class StartupService {
 
     @Transactional
     public void runStartup() {
-        //deleteTables();
+        deleteTables();
         log.info("Checking if users table exists");
         if (!tableExists("users")) {
             isNew.set(true);
@@ -239,8 +242,6 @@ public class StartupService {
             log.info("Fields table created successfully");
             createTableReferences();
             log.info("Table references created successfully");
-            createTableIndexes();
-            log.info("Table indexes created successfully");
             createModelPermissionsTable();
             log.info("Models permissions table created successfully");
             createModelLinksTable();

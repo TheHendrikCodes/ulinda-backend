@@ -46,6 +46,12 @@ public class AdminController {
     public void updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
         userService.updateUser(updateUserRequest);
     }
+
+    @GetMapping("/user/reset-password/{userId}")
+    public ResponseEntity<UserResetPasswordResponse> resetPassword(@PathVariable UUID userId) {
+        UserResetPasswordResponse response = new UserResetPasswordResponse();
+        return ResponseEntity.ok(response);
+    }
 }
 
 

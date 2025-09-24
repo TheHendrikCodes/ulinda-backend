@@ -1,5 +1,6 @@
 package org.ulinda.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.ulinda.security.JwtService;
 import org.ulinda.services.UserService;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,11 +30,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         if (userService.validateUser(loginRequest.getUsername(), loginRequest.getPassword())) {
-            String userId = userService.getUserId(loginRequest.getUsername());
-            String token = jwtService.generateToken(userId);
-            LoginResponse response = new LoginResponse(token, userId, jwtExpiration);
+            UUID userId = userService.getUserId(loginRequest.getUsername());
+            String token = jwtService.generateToken(userId.toString());
+            userService.saveNewToken(userId, token);
+            LoginResponse response = new LoginResponse(token, userId.toString(), jwtExpiration);
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
