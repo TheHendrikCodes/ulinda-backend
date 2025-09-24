@@ -149,7 +149,7 @@ public class UserService {
             log.info("Administrator (admin) user's settings can't be changed");
             return;
         }
-
+        user.setUsername(updateUserRequest.getUsername());
         user.setName(updateUserRequest.getName());
         user.setSurname(updateUserRequest.getSurname());
         user.setCanCreateModels(updateUserRequest.isCanCreateModels());
