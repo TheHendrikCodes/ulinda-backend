@@ -110,12 +110,13 @@ public class StartupService {
         String createSql = """
             CREATE TABLE current_user_tokens (
                 id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL,
                 current_token TEXT NOT NULL,
                 created_at TIMESTAMP WITH TIME ZONE NOT NULL,
 
                 -- Foreign key constraint for referential integrity
                 CONSTRAINT fk_current_user_tokens_id
-                    FOREIGN KEY (id) REFERENCES users(id)
+                    FOREIGN KEY (user_id) REFERENCES users(id)
             );
         """;
         jdbcTemplate.execute(createSql);

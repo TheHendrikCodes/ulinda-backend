@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface CurrentUserTokenRepository extends CrudRepository<CurrentUserToken, UUID> {
-    List<CurrentUserToken> findAllById(UUID userId);
+    List<CurrentUserToken> findAllByUserId(UUID userId);
 }

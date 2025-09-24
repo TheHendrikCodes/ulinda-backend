@@ -103,7 +103,7 @@ public class UserService {
         userRepository.findById(uuid).orElseThrow(() -> new RuntimeException("User not found"));
 
         // Get all existing tokens for the user
-        List<CurrentUserToken> existingTokens = currentUserTokenRepository.findAllById(uuid);
+        List<CurrentUserToken> existingTokens = currentUserTokenRepository.findAllByUserId(uuid);
         for (CurrentUserToken existingToken : existingTokens) {
             if (existingToken.getCurrentToken().equals(token)) {
                 return true;
@@ -117,7 +117,7 @@ public class UserService {
         User user = userRepository.findById(uuid).orElseThrow(() -> new RuntimeException("User not found"));
 
         // Get all existing tokens for the user
-        List<CurrentUserToken> existingTokens = currentUserTokenRepository.findAllById(uuid);
+        List<CurrentUserToken> existingTokens = currentUserTokenRepository.findAllByUserId(uuid);
 
         // If user already has 10 tokens, delete the oldest one
         if (existingTokens.size() >= 10) {
@@ -133,7 +133,7 @@ public class UserService {
 
         // Create and save the new token
         CurrentUserToken currentUserToken = new CurrentUserToken();
-        currentUserToken.setId(uuid);
+        currentUserToken.setUserId(uuid);
         currentUserToken.setCurrentToken(newToken);
         currentUserToken.setCreatedAt(Instant.now());
         currentUserTokenRepository.save(currentUserToken);

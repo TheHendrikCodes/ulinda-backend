@@ -13,6 +13,7 @@ import java.util.UUID;
 public class CurrentUserToken {
     @Id
     private UUID id;
+    private UUID userId;
     private String currentToken;
     private Instant createdAt;
 }
