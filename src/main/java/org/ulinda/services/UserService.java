@@ -17,6 +17,7 @@ import org.ulinda.repositories.CurrentUserTokenRepository;
 import org.ulinda.repositories.ModelRepository;
 import org.ulinda.repositories.UserModelPermissionRepository;
 import org.ulinda.repositories.UserRepository;
+import org.ulinda.security.JwtService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class UserService {
     private final UserModelPermissionRepository userModelPermissionRepository;
     private final ModelRepository modelRepository;
     private final CurrentUserTokenRepository currentUserTokenRepository;
+    private final JwtService jwtService;
 
     public UserService(
             UserRepository userRepository,
@@ -44,13 +46,15 @@ public class UserService {
             PasswordService passwordService,
             UserModelPermissionRepository userModelPermissionRepository,
             ModelRepository modelRepository,
-            CurrentUserTokenRepository currentUserTokenRepository) {
+            CurrentUserTokenRepository currentUserTokenRepository,
+            JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordService = passwordService;
         this.userModelPermissionRepository = userModelPermissionRepository;
         this.modelRepository = modelRepository;
         this.currentUserTokenRepository = currentUserTokenRepository;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -78,6 +82,7 @@ public class UserService {
         if (!userRepository.existsByUsername(username)) {
             String encryptedPassword = passwordEncoder.encode(password);
             User user = new User(username, encryptedPassword, createUserRequest.getName(), createUserRequest.getSurname(), createUserRequest.isCanCreateModels(), createUserRequest.isAdminUser());
+            user.setMustChangePassword(true);
             userRepository.save(user);
             CreateUserResponse response = new CreateUserResponse();
             response.setUsername(username);
@@ -110,6 +115,45 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
 
         userRepository.save(user);
+    }
+
+    @Transactional
+    public LoginResponse forcedChangePassword(String username, String oldPassword , String newPassword) {
+
+        if  (!StringUtils.hasText(username) || !StringUtils.hasText(oldPassword) || !StringUtils.hasText(newPassword)) {
+            throw new RuntimeException("Invalid parameters");
+        }
+        if (!userRepository.existsByUsername(username)) {
+            throw new RuntimeException("Username not found");
+        }
+        //Check to see if user was forced
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.isMustChangePassword() != true) {
+            throw new RuntimeException("User was not forced to change password");
+        }
+
+        //Check old password provided
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new FrontendException("Old password doesn't match", ErrorCode.OLD_PASSWORD_INCORRECT, true);
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
+        userRepository.save(user);
+
+        //Delete all tokens for user
+        currentUserTokenRepository.deleteAllByUserId(user.getId());
+
+        String newToken = jwtService.generateToken(user.getId().toString());
+        CurrentUserToken token = new CurrentUserToken();
+        token.setUserId(user.getId());
+        token.setCurrentToken(newToken);
+        token.setCreatedAt(Instant.now());
+        LoginResponse response = new LoginResponse();
+
+        //response.setUserId(user.getId());
+        response.setToken(newToken);
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -210,6 +254,7 @@ public class UserService {
         response.setSurname(user.getSurname());
         response.setCanCreateModels(user.isCanCreateModels());
         response.setAdminUser(user.isAdminUser());
+        response.setMustChangePassword(user.isMustChangePassword());
         return response;
     }
 
@@ -246,6 +291,7 @@ public class UserService {
         user.setSurname(updateUserRequest.getSurname());
         user.setCanCreateModels(updateUserRequest.isCanCreateModels());
         user.setAdminUser(updateUserRequest.isAdminUser());
+        user.setMustChangePassword(updateUserRequest.isMustChangePassword());
         userRepository.save(user);
         userModelPermissionRepository.deleteByUserId(userId);
 
@@ -256,5 +302,14 @@ public class UserService {
             userModelPermission.setPermission(permission.getPermission());
             userModelPermissionRepository.save(userModelPermission);
         }
+
+        //Check if user must change the password
+        if (updateUserRequest.isMustChangePassword()) {
+            //Delete all tokens for user
+            currentUserTokenRepository.deleteAllByUserId(userId);
+
+        }
     }
+
+
 }

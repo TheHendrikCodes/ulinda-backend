@@ -20,11 +20,17 @@ public class User {
     private boolean canCreateModels;
     @Column("is_admin_user")
     private boolean adminUser;
+    private boolean mustChangePassword;
 
     // Constructors
     public User() {}
 
-    public User(String username, String password, String name, String surname , boolean canCreateModels, boolean adminUser) {
+    public User(String username,
+                String password,
+                String name,
+                String surname ,
+                boolean canCreateModels,
+                boolean adminUser) {
         this.username = username;
         this.password = password;
         this.name = name;

@@ -45,7 +45,8 @@ public class StartupService {
                 name TEXT,
                 surname TEXT,
                 can_create_models BOOLEAN NOT NULL,
-                is_admin_user BOOLEAN NOT NULL
+                is_admin_user BOOLEAN NOT NULL,
+                must_change_password BOOLEAN NOT NULL
             )
             """;
         jdbcTemplate.execute(createSql);

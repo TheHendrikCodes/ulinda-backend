@@ -7,13 +7,16 @@ import lombok.Setter;
 @Setter
 public class LoginResponse {
     private String token;
-    private String userId;
     private long expiresIn;
+    private boolean mustChangePassword;
 
     public LoginResponse(String token, String username, long expiresIn) {
         this.token = token;
-        this.userId = username;
         this.expiresIn = expiresIn;
+    }
+
+    public LoginResponse() {
+
     }
 
 }

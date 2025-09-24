@@ -21,6 +21,7 @@ public class UpdateUserRequest {
             message = "Username must contain only letters and numbers, no spaces allowed")
     @NotBlank(message = "Username cannot be blank")
     private String username;
+    private boolean mustChangePassword;
 
     @NotNull
     private List<UpdateUserModelPermissionDto> permissions;

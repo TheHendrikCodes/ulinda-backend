@@ -12,4 +12,5 @@ public class GetUserResponse {
     private String surname;
     private boolean adminUser;
     private boolean canCreateModels;
+    private boolean mustChangePassword;
 }
