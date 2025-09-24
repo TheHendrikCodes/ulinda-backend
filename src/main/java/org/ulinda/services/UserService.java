@@ -109,7 +109,23 @@ public class UserService {
                 return true;
             }
         }
-        throw new FrontendException("Invalid token", true);
+        throw new FrontendException("Invalid token [" + token +"]", true);
+    }
+
+    @Transactional
+    public String resetPassword(final UUID uuid) {
+        //Validate user id
+        User user = userRepository.findById(uuid).orElseThrow(() -> new RuntimeException("User not found"));
+        final String newPassword = passwordService.generatePassword();
+
+        //Delete all tokens for user
+        currentUserTokenRepository.deleteAllByUserId(uuid);
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return newPassword;
+
     }
 
     @Transactional

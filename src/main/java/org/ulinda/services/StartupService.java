@@ -248,7 +248,7 @@ public class StartupService {
 
     @Transactional
     public void runStartup() {
-        deleteTables();
+        //deleteTables();
         log.info("Checking if users table exists");
         if (!tableExists("users")) {
             isNew.set(true);

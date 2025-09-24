@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface CurrentUserTokenRepository extends CrudRepository<CurrentUserToken, UUID> {
     List<CurrentUserToken> findAllByUserId(UUID userId);
+    void deleteAllByUserId(UUID userId);
 }

@@ -50,6 +50,7 @@ public class AdminController {
     @GetMapping("/user/reset-password/{userId}")
     public ResponseEntity<UserResetPasswordResponse> resetPassword(@PathVariable UUID userId) {
         UserResetPasswordResponse response = new UserResetPasswordResponse();
+        response.setNewPassword(userService.resetPassword(userId));
         return ResponseEntity.ok(response);
     }
 }
