@@ -120,6 +120,11 @@ public class StartupService {
             );
         """;
         jdbcTemplate.execute(createSql);
+
+        String createIndexSql = """
+            CREATE INDEX idx_current_user_tokens_user_id ON current_user_tokens (user_id)
+        """;
+        jdbcTemplate.execute(createIndexSql);
     }
 
     private void deleteTables() {
