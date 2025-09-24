@@ -171,6 +171,7 @@ public class UserService {
         deleteCurrentUserTokens(uuid);
 
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(true);
         userRepository.save(user);
 
         return newPassword;
