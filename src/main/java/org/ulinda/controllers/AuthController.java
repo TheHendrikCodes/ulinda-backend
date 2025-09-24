@@ -21,7 +21,7 @@ public class AuthController {
 
     public AuthController(UserService userService,
                           JwtService jwtService,
-                          @Value("${jwt.expiration}") long jwtExpiration) {
+                          @Value("${ULINDA_JWT_EXPIRATION}") long jwtExpiration) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.jwtExpiration = jwtExpiration;
