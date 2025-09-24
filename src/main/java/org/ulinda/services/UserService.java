@@ -95,6 +95,24 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public boolean validatePassword(UUID userId, String password) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    @Transactional
+    public void changePassword(UUID userId, String newPassword) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        //Delete all tokens for user
+        currentUserTokenRepository.deleteAllByUserId(userId);
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
     public boolean validateCurrentToken(UUID uuid, String token) {
         if (!StringUtils.hasText(token)) {
             throw new RuntimeException("Token is empty");
