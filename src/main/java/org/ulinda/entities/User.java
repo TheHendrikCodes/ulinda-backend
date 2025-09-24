@@ -20,7 +20,6 @@ public class User {
     private boolean canCreateModels;
     @Column("is_admin_user")
     private boolean adminUser;
-    private String currentToken;
 
     // Constructors
     public User() {}

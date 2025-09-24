@@ -7,15 +7,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.ulinda.dto.*;
+import org.ulinda.entities.CurrentUserToken;
 import org.ulinda.entities.Model;
 import org.ulinda.entities.User;
 import org.ulinda.entities.UserModelPermission;
 import org.ulinda.exceptions.ErrorCode;
 import org.ulinda.exceptions.FrontendException;
+import org.ulinda.repositories.CurrentUserTokenRepository;
 import org.ulinda.repositories.ModelRepository;
 import org.ulinda.repositories.UserModelPermissionRepository;
 import org.ulinda.repositories.UserRepository;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,18 +36,21 @@ public class UserService {
     private final PasswordService passwordService;
     private final UserModelPermissionRepository userModelPermissionRepository;
     private final ModelRepository modelRepository;
+    private final CurrentUserTokenRepository currentUserTokenRepository;
 
     public UserService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             PasswordService passwordService,
             UserModelPermissionRepository userModelPermissionRepository,
-            ModelRepository modelRepository) {
+            ModelRepository modelRepository,
+            CurrentUserTokenRepository currentUserTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordService = passwordService;
         this.userModelPermissionRepository = userModelPermissionRepository;
         this.modelRepository = modelRepository;
+        this.currentUserTokenRepository = currentUserTokenRepository;
     }
 
     @Transactional
@@ -90,15 +96,18 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public boolean validateCurrentToken(UUID uuid, String token) {
-        User user = userRepository.findById(uuid).orElseThrow(() -> new RuntimeException("User not found"));
         if (!StringUtils.hasText(token)) {
             throw new RuntimeException("Token is empty");
         }
-        if (!StringUtils.hasText(user.getCurrentToken())) {
-            throw new RuntimeException("User has not logged in before");
-        }
-        if (user.getCurrentToken().equals(token)) {
-            return true;
+        //Validate user ID
+        userRepository.findById(uuid).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Get all existing tokens for the user
+        List<CurrentUserToken> existingTokens = currentUserTokenRepository.findAllById(uuid);
+        for (CurrentUserToken existingToken : existingTokens) {
+            if (existingToken.getCurrentToken().equals(token)) {
+                return true;
+            }
         }
         throw new FrontendException("Invalid token", true);
     }
@@ -106,8 +115,28 @@ public class UserService {
     @Transactional
     public void saveNewToken(UUID uuid, String newToken) {
         User user = userRepository.findById(uuid).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setCurrentToken(newToken);
-        userRepository.save(user);
+
+        // Get all existing tokens for the user
+        List<CurrentUserToken> existingTokens = currentUserTokenRepository.findAllById(uuid);
+
+        // If user already has 10 tokens, delete the oldest one
+        if (existingTokens.size() >= 10) {
+            // Find the oldest token (the one with the earliest createdAt timestamp)
+            CurrentUserToken oldestToken = existingTokens.stream()
+                    .min((t1, t2) -> t1.getCreatedAt().compareTo(t2.getCreatedAt()))
+                    .orElse(null);
+
+            if (oldestToken != null) {
+                currentUserTokenRepository.delete(oldestToken);
+            }
+        }
+
+        // Create and save the new token
+        CurrentUserToken currentUserToken = new CurrentUserToken();
+        currentUserToken.setId(uuid);
+        currentUserToken.setCurrentToken(newToken);
+        currentUserToken.setCreatedAt(Instant.now());
+        currentUserTokenRepository.save(currentUserToken);
     }
 
     @Transactional(readOnly = true)

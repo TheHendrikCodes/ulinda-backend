@@ -45,8 +45,7 @@ public class StartupService {
                 name TEXT,
                 surname TEXT,
                 can_create_models BOOLEAN NOT NULL,
-                is_admin_user BOOLEAN NOT NULL,
-                current_token TEXT
+                is_admin_user BOOLEAN NOT NULL
             )
             """;
         jdbcTemplate.execute(createSql);
@@ -107,6 +106,21 @@ public class StartupService {
         jdbcTemplate.execute(createSql);
     }
 
+    private void createCurrentUserTokensTable() {
+        String createSql = """
+            CREATE TABLE current_user_tokens (
+                id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+                current_token TEXT NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+
+                -- Foreign key constraint for referential integrity
+                CONSTRAINT fk_current_user_tokens_id
+                    FOREIGN KEY (id) REFERENCES users(id)
+            );
+        """;
+        jdbcTemplate.execute(createSql);
+    }
+
     private void deleteTables() {
         deleteModelLinksTables();
 
@@ -117,8 +131,9 @@ public class StartupService {
             DROP TABLE IF EXISTS fields;
             DROP TABLE IF EXISTS user_model_permissions;
             DROP TABLE IF EXISTS model_links;
-            DROP TABLE IF EXISTS models;    
+            DROP TABLE IF EXISTS models;
             DROP TABLE IF EXISTS user_roles;
+            DROP TABLE IF EXISTS current_user_tokens;
             DROP TABLE IF EXISTS users;
             DROP TABLE IF EXISTS error_logs;
         """;
@@ -248,6 +263,8 @@ public class StartupService {
             log.info("Created model links table");
             createErrorLogTable();
             log.info("Errors table created successfully");
+            createCurrentUserTokensTable();
+            log.info("Current user tokens table created successfully");
         } else {
             log.info("Users table already exists");
         }
