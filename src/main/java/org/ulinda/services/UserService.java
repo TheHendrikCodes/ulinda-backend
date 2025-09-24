@@ -108,7 +108,7 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
         //Delete all tokens for user
-        currentUserTokenRepository.deleteAllByUserId(userId);
+        deleteCurrentUserTokens(userId);
 
         user.setPassword(passwordEncoder.encode(newPassword));
 
@@ -140,7 +140,7 @@ public class UserService {
         userRepository.save(user);
 
         //Delete all tokens for user
-        currentUserTokenRepository.deleteAllByUserId(user.getId());
+        deleteCurrentUserTokens(user.getId());
     }
 
     @Transactional(readOnly = true)
@@ -168,7 +168,7 @@ public class UserService {
         final String newPassword = passwordService.generatePassword();
 
         //Delete all tokens for user
-        currentUserTokenRepository.deleteAllByUserId(uuid);
+        deleteCurrentUserTokens(uuid);
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -293,9 +293,13 @@ public class UserService {
         //Check if user must change the password
         if (updateUserRequest.isMustChangePassword()) {
             //Delete all tokens for user
-            currentUserTokenRepository.deleteAllByUserId(userId);
+            deleteCurrentUserTokens(userId);
 
         }
+    }
+
+    private void deleteCurrentUserTokens(UUID userId) {
+        currentUserTokenRepository.deleteAllByUserId(userId);
     }
 
 
