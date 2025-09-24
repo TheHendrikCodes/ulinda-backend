@@ -112,7 +112,7 @@ public class StartupService {
             DROP TABLE IF EXISTS models;    
             DROP TABLE IF EXISTS user_roles;
             DROP TABLE IF EXISTS users;
-            
+            DROP TABLE IF EXISTS error_logs;
         """;
         jdbcTemplate.execute(deleteSql);
     }
@@ -224,8 +224,7 @@ public class StartupService {
 
     @Transactional
     public void runStartup() {
-        //deleteTables();
-        //createErrorLogTable();
+        deleteTables();
         log.info("Checking if users table exists");
         if (!tableExists("users")) {
             isNew.set(true);
