@@ -142,7 +142,7 @@ public class ModelService {
         GetModelsResponse response = new GetModelsResponse();
         for(Model model: modelRepository.findAll()) {
             if (doPermissionsCheck) {
-                if (!userHasViewPermissionOnModel(userId, model.getId())) {
+                if (!userHasGivenPermissionOnModel(userId, model.getId(), ModelPermission.VIEW_RECORDS)) {
                     continue;
                 }
             }
@@ -168,7 +168,7 @@ public class ModelService {
         return response;
     }
 
-    private boolean userHasViewPermissionOnModel(UUID userId, UUID modelId) {
+    private boolean userHasGivenPermissionOnModel(UUID userId, UUID modelId, ModelPermission checkPermission) {
         Model model = modelRepository.findById(modelId).orElseThrow(() -> new RuntimeException("Model with id " + modelId + " does not exist"));
         boolean hasPermission = false;
         GetUserResponse user = userService.getUser(userId);
@@ -177,7 +177,7 @@ public class ModelService {
             hasPermission = true;
         } else {
             for (UserModelPermissionDto permission : userPermissions.getUserModelPermissions()) {
-                if (permission.getModelId().equals(model.getId()) && permission.getPermission() == ModelPermission.VIEW_RECORDS) {
+                if (permission.getModelId().equals(model.getId()) && permission.getPermission() == checkPermission) {
                     hasPermission = true;
                 }
             }
@@ -196,7 +196,7 @@ public class ModelService {
         Model model = modelRepository.findById(modelId).orElseThrow(() -> new RuntimeException("Model not found: " + modelId));
 
         if (doPermissionsCheck) {
-            boolean hasPermission = userHasViewPermissionOnModel(userId, model.getId());
+            boolean hasPermission = userHasGivenPermissionOnModel(userId, model.getId(), ModelPermission.VIEW_RECORDS);
             if (!hasPermission) {
                 throw new RuntimeException("User does not have permission to view records for model: " + model.getId());
             }
@@ -231,7 +231,7 @@ public class ModelService {
                 modelLinkTarget.setCan_have_targets_count(modelLink.getModel1CanHaveSoManyModel2sCount());
                 modelLinkTarget.setModelLinkId(modelLink.getId());
                 modelLinkTarget.setTargetModelName(targetModel.getName());
-                if (userHasViewPermissionOnModel(userId, targetModel.getId())) {
+                if (userHasGivenPermissionOnModel(userId, targetModel.getId(), ModelPermission.VIEW_RECORDS)) {
                     response.getModelLinkTargets().add(modelLinkTarget);
                 }
             } else if (modelId.equals(modelLink.getModel2Id())) {
@@ -241,7 +241,7 @@ public class ModelService {
                 modelLinkTarget.setCan_have_unlimited_targets(modelLink.isModel2CanHaveUnlimitedModel1s());
                 modelLinkTarget.setCan_have_targets_count(modelLink.getModel2CanHaveSoManyModel1sCount());
                 modelLinkTarget.setModelLinkId(modelLink.getId());
-                if (userHasViewPermissionOnModel(userId, targetModel.getId())) {
+                if (userHasGivenPermissionOnModel(userId, targetModel.getId(), ModelPermission.VIEW_RECORDS)) {
                     modelLinkTarget.setTargetModelName(targetModel.getName());
                 }
 
@@ -255,9 +255,21 @@ public class ModelService {
 
     @Transactional
     public UUID createRecord(UUID modelId, Map<UUID, Object> fieldValues) {
+        return createRecord(null , modelId, fieldValues, false);
+    }
+
+    @Transactional
+    public UUID createRecord(UUID userId , UUID modelId, Map<UUID, Object> fieldValues, boolean doPermissionsCheck) {
         // Validate model exists
         if (!modelRepository.existsById(modelId)) {
             throw new IllegalArgumentException("Model not found: " + modelId);
+        }
+
+        // Perform permissions check
+        if (doPermissionsCheck) {
+            if (!userHasGivenPermissionOnModel(userId, modelId, ModelPermission.ADD_RECORDS)) {
+                throw new RuntimeException("User with ID: " + userId + " does not have permission to add records for model: " + modelId);
+            }
         }
 
         // Get fields for validation and column mapping

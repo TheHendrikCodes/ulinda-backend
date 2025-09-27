@@ -48,8 +48,10 @@ public class ModelController {
 
     @PostMapping("/models/{modelId}/records")
     public ResponseEntity<UUID> createRecord(@PathVariable UUID modelId,
-                                             @RequestBody @Valid CreateRecordRequest request) {
-        UUID recordId = modelService.createRecord(modelId, request.getFieldValues());
+                                             @RequestBody @Valid CreateRecordRequest request,
+                                             Authentication authentication) {
+        UUID userId = authenticationHelper.getUserId(authentication);
+        UUID recordId = modelService.createRecord(userId, modelId, request.getFieldValues(), true);
         return ResponseEntity.ok(recordId);
     }
 
