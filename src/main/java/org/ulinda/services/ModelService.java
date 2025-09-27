@@ -1012,7 +1012,13 @@ public class ModelService {
     }
 
     @Transactional
-    public void deleteRecord(UUID modelId, UUID recordId, boolean overrideLinkedModelsError) {
+    public void deleteRecord(UUID userId, UUID modelId, UUID recordId, boolean overrideLinkedModelsError) {
+
+        // perform permissions check
+        if (!userHasGivenPermissionOnModel(userId, modelId, ModelPermission.DELETE_RECORDS)) {
+            throw new RuntimeException("User with id " + userId + " does not have permission to delete records for model " + modelId);
+        }
+
         // Validate input
         if (recordId == null) {
             throw new IllegalArgumentException("Record ID cannot be null");
