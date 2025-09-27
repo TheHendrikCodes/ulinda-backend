@@ -25,13 +25,6 @@ public class ModelController {
     @Autowired
     private AuthenticationHelper authenticationHelper;
 
-    @PostMapping("/create-model")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CREATE_MODELS')")
-    public ResponseEntity<String> createModel(@RequestBody @Valid CreateModelRequest request, Authentication authentication) {
-           modelService.createModel(request, authenticationHelper.getUserId(authentication));
-            return ResponseEntity.status(HttpStatus.CREATED).body("Model created successfully");
-    }
-
     @GetMapping("/models")
     public ResponseEntity<GetModelsResponse> getModels(Authentication authentication) {
         UUID userId = authenticationHelper.getUserId(authentication);
@@ -96,21 +89,6 @@ public class ModelController {
         modelService.deleteRecordLink(modelLinkId, linkId);
     }
 
-    @PostMapping("/models/link-models")
-    public void linkModels(@Valid @RequestBody LinkModelsRequest linkModelsRequest) {
-        modelService.linkModels(linkModelsRequest);
-    }
-
-    @PostMapping("/models/linked-models")
-    public void updateLinkedModels(@Valid @RequestBody UpdateLinkedModelsRequest updateLinkedModelsRequest) {
-        modelService.updatelinkModels(updateLinkedModelsRequest);
-    }
-
-    @DeleteMapping("/models/link-models")
-    public void deleteModelLink(@Valid @RequestBody DeleteModelLinkRequest deleteModelLinkRequest) {
-        modelService.deleteModelLink(deleteModelLinkRequest);
-    }
-
     @GetMapping("/models/link-models")
     public ResponseEntity<GetModelLinksResponse> getLinkedModels() {
         return ResponseEntity.ok(modelService.getModelLinks());
@@ -120,30 +98,5 @@ public class ModelController {
     public void linkRecords(@Valid @RequestBody LinkRecordsRequest request, Authentication authentication) {
         UUID userId = authenticationHelper.getUserId(authentication);
         modelService.linkRecords(userId, request, true);
-    }
-
-    @PostMapping("/fields/{modelId}")
-    public void createNewField(@PathVariable UUID modelId, @RequestBody @Valid FieldDto fieldDto) {
-        modelService.addField(modelId, fieldDto);
-    }
-
-    @DeleteMapping("/fields/{fieldId}")
-    public void deleteField(@PathVariable UUID fieldId) {
-        modelService.deleteField(fieldId);
-    }
-
-    @PutMapping("/models/{modelId}")
-    public void updateModel(@PathVariable UUID modelId, @Valid @RequestBody UpdateModelRequest updateModelRequest) {
-        modelService.updateModel(modelId, updateModelRequest);
-    }
-
-    @PutMapping("/fields/{fieldId}")
-    public void updateField(@PathVariable UUID fieldId, @Valid @RequestBody UpdateFieldRequest updateModelRequest) {
-        modelService.updateField(fieldId, updateModelRequest);
-    }
-
-    @DeleteMapping("/models/{modelId}")
-    public void deleteModel(@PathVariable UUID modelId, @RequestParam(defaultValue = "false") boolean force) {
-        modelService.deleteModel(modelId, force);
     }
 }
