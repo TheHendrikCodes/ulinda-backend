@@ -199,7 +199,7 @@ public class ModelService {
             boolean hasPermission = userHasGivenPermissionOnModel(userId, model.getId(), ModelPermission.VIEW_RECORDS);
             if (!hasPermission) {
                 log.error("User does not have permission to view records for model: " + model.getId());
-                throw new FrontendException("VIEW permissions required", ErrorCode.PERMISSION_DENIED, true);
+                throw new FrontendException("VIEW permission required", ErrorCode.PERMISSION_DENIED, true);
             }
         }
 
@@ -270,7 +270,7 @@ public class ModelService {
         if (doPermissionsCheck) {
             if (!userHasGivenPermissionOnModel(userId, modelId, ModelPermission.ADD_RECORDS)) {
                 log.error("User with ID: " + userId + " does not have permission to add records for model: " + modelId);
-                throw new FrontendException("ADD RECORDS permissions required", ErrorCode.PERMISSION_DENIED, true);
+                throw new FrontendException("ADD RECORDS permission required", ErrorCode.PERMISSION_DENIED, true);
             }
         }
 
@@ -342,7 +342,7 @@ public class ModelService {
         // Perform permissions check
         if (!userHasGivenPermissionOnModel(userId, modelId, ModelPermission.EDIT_RECORDS)) {
             log.error("User with ID: " + userId + " does not have permission to edit records for model: " + modelId);
-            throw new FrontendException("EDIT permissions required", ErrorCode.PERMISSION_DENIED, true);
+            throw new FrontendException("EDIT permission required", ErrorCode.PERMISSION_DENIED, true);
         }
 
         //Check if UUID exist
@@ -501,7 +501,7 @@ public class ModelService {
         if (doPermissionsCheck) {
             if (!userHasGivenPermissionOnModel(userId, sourceModelId, ModelPermission.VIEW_RECORDS)) {
                 log.error("User with ID [" + userId + "] does not have VIEW permissions on model with ID [" + sourceModelId + "]");
-                throw new FrontendException("VIEW permissions required", ErrorCode.PERMISSION_DENIED, true);
+                throw new FrontendException("VIEW permission required", ErrorCode.PERMISSION_DENIED, true);
             }
         }
 
@@ -955,7 +955,7 @@ public class ModelService {
         // Perform permissions check
         if (!userHasGivenPermissionOnModel(userId, modelId, ModelPermission.VIEW_RECORDS)) {
             log.error("User with id " + userId + " does not have permission to view records on model with id " + modelId);
-            throw new FrontendException("VIEW permissions required", ErrorCode.PERMISSION_DENIED, true);
+            throw new FrontendException("VIEW permission required", ErrorCode.PERMISSION_DENIED, true);
         }
 
         // Validate input
@@ -1039,7 +1039,7 @@ public class ModelService {
         // perform permissions check
         if (!userHasGivenPermissionOnModel(userId, modelId, ModelPermission.DELETE_RECORDS)) {
             log.error("User with id " + userId + " does not have permission to delete records for model " + modelId);
-            throw new FrontendException("DELETE permissions required", ErrorCode.PERMISSION_DENIED, true);
+            throw new FrontendException("DELETE permission required", ErrorCode.PERMISSION_DENIED, true);
         }
 
         // Validate input
@@ -1530,7 +1530,7 @@ public class ModelService {
         if (doPermissionsCheck) {
             if (!userHasGivenPermissionOnModel(userId, request.getSourceModelId(), ModelPermission.VIEW_RECORDS)) {
                 log.error("User does not have permission to link records: Permissions Needed: VIEW records on model with ID: [" + request.getSourceModelId() + "]");
-                throw new FrontendException("VIEW permissions required", ErrorCode.PERMISSION_DENIED, true);
+                throw new FrontendException("VIEW permission required", ErrorCode.PERMISSION_DENIED, true);
             }
         }
 
@@ -1557,7 +1557,7 @@ public class ModelService {
         if (doPermissionsCheck) {
             if (!userHasGivenPermissionOnModel(userId, targetModelId, ModelPermission.VIEW_RECORDS)) {
                 log.error("User does not have permission to link records: Permissions Needed: VIEW records on model with ID: [" +targetModelId + "]");
-                throw new FrontendException("VIEW permissions required", ErrorCode.PERMISSION_DENIED, true);
+                throw new FrontendException("VIEW permission required", ErrorCode.PERMISSION_DENIED, true);
             }
         }
 
@@ -1723,12 +1723,12 @@ public class ModelService {
         // Perform permissions check
         if (!userHasGivenPermissionOnModel(userId, modelLink.getModel1Id(), ModelPermission.VIEW_RECORDS)) {
             log.error("Cannot unlink records: User with ID: [" + userId + "] does not have VIEW permission on model with ID: [" + modelLink.getModel1Id() + "]");
-            throw new FrontendException("VIEW permissions required", ErrorCode.PERMISSION_DENIED, true);
+            throw new FrontendException("VIEW permission required", ErrorCode.PERMISSION_DENIED, true);
         }
 
         if (!userHasGivenPermissionOnModel(userId, modelLink.getModel2Id(), ModelPermission.VIEW_RECORDS)) {
             log.error("Cannot unlink records: User with ID: [" + userId + "] does not have VIEW permission on model with ID: [" + modelLink.getModel2Id() + "]");
-            throw new FrontendException("VIEW permissions required", ErrorCode.PERMISSION_DENIED, true);
+            throw new FrontendException("VIEW permission required", ErrorCode.PERMISSION_DENIED, true);
         }
 
         String sql = "SELECT EXISTS(SELECT 1 FROM model_links_" + sanitizeIdentifier(modelLinkId.toString()) + " WHERE id = ?)";
