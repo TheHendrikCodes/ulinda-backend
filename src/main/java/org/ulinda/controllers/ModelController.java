@@ -84,9 +84,10 @@ public class ModelController {
     @PostMapping("/models/{modelId}/records/search")
     public ResponseEntity<GetRecordsResponse> getRecords(
             @PathVariable UUID modelId,
-            @Valid @RequestBody GetRecordsRequest request) {
-
-        GetRecordsResponse response = modelService.getRecords(request, modelId);
+            @Valid @RequestBody GetRecordsRequest request,
+            Authentication authentication) {
+        UUID userId = authenticationHelper.getUserId(authentication);
+        GetRecordsResponse response = modelService.getRecords(userId, request, modelId, true);
         return ResponseEntity.ok(response);
     }
 

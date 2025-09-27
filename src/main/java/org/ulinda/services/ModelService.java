@@ -489,6 +489,17 @@ public class ModelService {
 
     @Transactional(readOnly = true)
     public GetRecordsResponse getRecords(GetRecordsRequest request, UUID sourceModelId) {
+        return getRecords(null, request, sourceModelId, false);
+    }
+
+    @Transactional(readOnly = true)
+    public GetRecordsResponse getRecords(UUID userId, GetRecordsRequest request, UUID sourceModelId, boolean doPermissionsCheck) {
+
+        if (doPermissionsCheck) {
+            if (!userHasGivenPermissionOnModel(userId, sourceModelId, ModelPermission.VIEW_RECORDS)) {
+                throw new IllegalArgumentException("User with ID [" + userId + "] does not have VIEW permissions on model with ID [" + sourceModelId + "]");
+            }
+        }
 
         if (request.getQueryType() == null) {
             throw new FrontendException("Query Type not supplied", true);
