@@ -408,7 +408,7 @@ public class ModelService {
         log.debug("Updated record with ID: {} in table: {}, rows affected: {}", recordId, recordTableName, rowsAffected);
 
         // Return the updated record
-        return getRecord(modelId, recordId);
+        return getRecord(userId, modelId, recordId);
     }
 
     private Object validateAndConvertValue(Object value, FieldType fieldType, String fieldName) {
@@ -946,7 +946,13 @@ public class ModelService {
     }
 
     @Transactional(readOnly = true)
-    public RecordDto getRecord(UUID modelId, UUID recordId) {
+    public RecordDto getRecord(UUID userId, UUID modelId, UUID recordId) {
+
+        // Perform permissions check
+        if (!userHasGivenPermissionOnModel(userId, modelId, ModelPermission.VIEW_RECORDS)) {
+            throw new RuntimeException("User with id " + userId + " does not have permission to view records on model with id " + modelId);
+        }
+
         // Validate input
         if (recordId == null) {
             throw new IllegalArgumentException("Record ID cannot be null");

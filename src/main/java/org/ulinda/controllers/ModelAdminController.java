@@ -71,4 +71,9 @@ public class ModelAdminController {
     public void deleteModel(@PathVariable UUID modelId, @RequestParam(defaultValue = "false") boolean force) {
         modelService.deleteModel(modelId, force);
     }
+
+    @GetMapping("/models/link-models")
+    public ResponseEntity<GetModelLinksResponse> getLinkedModels() {
+        return ResponseEntity.ok(modelService.getModelLinks());
+    }
 }

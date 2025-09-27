@@ -60,8 +60,10 @@ public class ModelController {
 
     @GetMapping("/records/{modelId}/{recordId}")
     public ResponseEntity<RecordDto> getRecord(@PathVariable UUID recordId,
-                                               @PathVariable UUID modelId) {
-        RecordDto record = modelService.getRecord(modelId, recordId);
+                                               @PathVariable UUID modelId,
+                                               Authentication authentication) {
+        UUID userId = authenticationHelper.getUserId(authentication);
+        RecordDto record = modelService.getRecord(userId, modelId, recordId);
         return ResponseEntity.ok(record);
     }
 
@@ -88,11 +90,6 @@ public class ModelController {
     public void deleteLink(@PathVariable UUID modelLinkId, @PathVariable UUID linkId, Authentication authentication) {
         UUID userId = authenticationHelper.getUserId(authentication);
         modelService.deleteRecordLink(userId, modelLinkId, linkId);
-    }
-
-    @GetMapping("/models/link-models")
-    public ResponseEntity<GetModelLinksResponse> getLinkedModels() {
-        return ResponseEntity.ok(modelService.getModelLinks());
     }
 
     @PostMapping("/records/link-records")
