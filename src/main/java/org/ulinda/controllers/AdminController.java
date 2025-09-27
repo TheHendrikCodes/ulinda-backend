@@ -3,13 +3,21 @@ package org.ulinda.controllers;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.ulinda.dto.*;
+import org.ulinda.entities.ErrorLog;
+import org.ulinda.services.ErrorService;
 import org.ulinda.services.UserService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -19,6 +27,9 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ErrorService errorService;
 
     @GetMapping("/users")
     public ResponseEntity<GetUsersResponse> getUsers() {
@@ -53,6 +64,43 @@ public class AdminController {
         response.setNewPassword(userService.resetPassword(userId));
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/errors")
+    public ResponseEntity<GetErrorsResponse> getErrors(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "5") int size) {
+
+        Pageable pageable = PageRequest.of(pageNumber, size);
+        Page<ErrorLog> errors = errorService.getErrors(pageable);
+
+        GetErrorsResponse response = new GetErrorsResponse();
+
+        // Convert ErrorLog entities to ErrorDto
+        List<ErrorDto> errorDtos = errors.getContent()
+                .stream()
+                .map(this::convertToDto)  // or use a mapper service
+                .collect(Collectors.toList());
+
+        // Set the converted errors
+        response.setErrors(errorDtos);
+
+        // Set pagination info
+        response.setPagingInfo(new ErrorPagingInfo(errors));
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Helper method to convert ErrorLog to ErrorDto
+    private ErrorDto convertToDto(ErrorLog errorLog) {
+        ErrorDto dto = new ErrorDto();
+        dto.setErrorIdentifier(errorLog.getErrorIdentifier());
+        dto.setMessage(errorLog.getMessage());
+        dto.setTimestamp(errorLog.getTimestamp());
+        // Map other fields as needed
+        return dto;
+    }
+
+
 }
 
 

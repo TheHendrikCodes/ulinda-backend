@@ -2,12 +2,17 @@ package org.ulinda.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.ulinda.dto.GetErrorsResponse;
 import org.ulinda.entities.ErrorLog;
 import org.ulinda.exceptions.ErrorResponse;
 import org.ulinda.repositories.ErrorRepository;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -42,5 +47,10 @@ public class ErrorService {
         java.io.PrintWriter pw = new java.io.PrintWriter(sw);
         e.printStackTrace(pw);
         return sw.toString();
+    }
+
+    public Page<ErrorLog> getErrors(Pageable pageable) {
+        Page<ErrorLog> errors = errorRepository.findAll(pageable);
+        return errors;
     }
 }
