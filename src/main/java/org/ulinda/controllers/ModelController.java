@@ -91,6 +91,11 @@ public class ModelController {
         modelService.linkModels(linkModelsRequest);
     }
 
+    @PostMapping("/models/linked-models")
+    public void updateLinkedModels(@Valid @RequestBody UpdateLinkedModelsRequest updateLinkedModelsRequest) {
+        modelService.updatelinkModels(updateLinkedModelsRequest);
+    }
+
     @GetMapping("/models/link-models")
     public ResponseEntity<GetModelLinksResponse> getLinkedModels() {
         return ResponseEntity.ok(modelService.getModelLinks());

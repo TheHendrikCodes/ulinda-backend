@@ -1325,6 +1325,16 @@ public class ModelService {
     }
 
     @Transactional
+    public void updatelinkModels(UpdateLinkedModelsRequest updateLinkedModelsRequest) {
+        ModelLink link = modelLinkRepository.findById(updateLinkedModelsRequest.getModelLinkId()).orElseThrow(() -> new RuntimeException("Link with id " + updateLinkedModelsRequest.getModelLinkId() + " does not exist"));
+        link.setModel1CanHaveSoManyModel2sCount(updateLinkedModelsRequest.getModel1_can_have_so_many_model2s_count());
+        link.setModel2CanHaveSoManyModel1sCount(updateLinkedModelsRequest.getModel2_can_have_so_many_model1s_count());
+        link.setModel1CanHaveUnlimitedModel2s(updateLinkedModelsRequest.isModel1_can_have_unlimited_model2s());
+        link.setModel2CanHaveUnlimitedModel1s(updateLinkedModelsRequest.isModel2_can_have_unlimited_model1s());
+        modelLinkRepository.save(link);
+    }
+
+    @Transactional
     public void deleteField(UUID fieldId) {
         // First check if the field exists
         Field field = fieldRepository.findById(fieldId).orElseThrow(() -> new IllegalArgumentException("Invalid field id"));
@@ -1383,6 +1393,7 @@ public class ModelService {
         List<ModelLinkDto> modelLinkDtos = new ArrayList<>();
         for (ModelLink link : links) {
             ModelLinkDto modelLinkDto = new ModelLinkDto();
+            modelLinkDto.setModelLinkId(link.getId());
             modelLinkDto.setModel1Id(link.getModel1Id());
             modelLinkDto.setModel2Id(link.getModel2Id());
             modelLinkDto.setModel1_can_have_so_many_model2s_count(link.getModel1CanHaveSoManyModel2sCount());

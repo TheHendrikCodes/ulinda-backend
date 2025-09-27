@@ -489,8 +489,6 @@ public class DemoDataService {
         linkModelsRequest.setModel2_can_have_unlimited_model1s(false);
         linkModelsRequest.setModel1_can_have_so_many_model2s_count(1L);
         linkModelsRequest.setModel2_can_have_so_many_model1s_count(1L);
-        linkModelsRequest.setModel1Name("Employees");
-        linkModelsRequest.setModel2Name("Payslips");
 
         modelService.linkModels(linkModelsRequest);
 
@@ -564,8 +562,6 @@ public class DemoDataService {
         linkModelsRequest.setModel2_can_have_unlimited_model1s(true);
         linkModelsRequest.setModel1_can_have_so_many_model2s_count(null);
         linkModelsRequest.setModel2_can_have_so_many_model1s_count(null);
-        linkModelsRequest.setModel1Name("Employees");
-        linkModelsRequest.setModel2Name("Motorbikes");
 
         modelService.linkModels(linkModelsRequest);
 

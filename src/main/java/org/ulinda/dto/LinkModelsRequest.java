@@ -17,7 +17,4 @@ public class LinkModelsRequest {
 
     private Long model1_can_have_so_many_model2s_count;
     private Long model2_can_have_so_many_model1s_count;
-
-    private String model1Name;
-    private String model2Name;
 }
