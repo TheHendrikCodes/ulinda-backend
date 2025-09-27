@@ -33,14 +33,16 @@ public class ModelController {
     }
 
     @GetMapping("/models")
-    public ResponseEntity<GetModelsResponse> getModels() {
-        GetModelsResponse response = modelService.getModels();
+    public ResponseEntity<GetModelsResponse> getModels(Authentication authentication) {
+        UUID userId = authenticationHelper.getUserId(authentication);
+        GetModelsResponse response = modelService.getModels(userId, true);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/models/{modelId}")
-    public ResponseEntity<GetModelResponse> getModel(@PathVariable("modelId") UUID modelId) {
-        GetModelResponse response = modelService.getModel(modelId);
+    public ResponseEntity<GetModelResponse> getModel(@PathVariable("modelId") UUID modelId, Authentication authentication) {
+        UUID userId = authenticationHelper.getUserId(authentication);
+        GetModelResponse response = modelService.getModel(modelId, userId, true);
         return ResponseEntity.ok(response);
     }
 

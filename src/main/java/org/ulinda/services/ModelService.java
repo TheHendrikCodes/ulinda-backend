@@ -10,6 +10,7 @@ import org.ulinda.entities.Field;
 import org.ulinda.entities.Model;
 import org.ulinda.entities.ModelLink;
 import org.ulinda.enums.FieldType;
+import org.ulinda.enums.ModelPermission;
 import org.ulinda.enums.QueryType;
 import org.ulinda.enums.SearchFieldType;
 import org.ulinda.exceptions.ErrorCode;
@@ -40,6 +41,8 @@ public class ModelService {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private UserService userService;
 
     @Transactional
     public void createModel(CreateModelRequest request, UUID ownerId) {
@@ -131,8 +134,18 @@ public class ModelService {
 
     @Transactional(readOnly = true)
     public GetModelsResponse getModels() {
+        return getModels(null, false);
+    }
+
+    @Transactional(readOnly = true)
+    public GetModelsResponse getModels(UUID userId, boolean doPermissionsCheck) {
         GetModelsResponse response = new GetModelsResponse();
         for(Model model: modelRepository.findAll()) {
+            if (doPermissionsCheck) {
+                if (!userHasViewPermissionOnModel(userId, model.getId())) {
+                    continue;
+                }
+            }
             ModelDto modelDto = new ModelDto();
             modelDto.setId(model.getId());
             modelDto.setDescription(model.getDescription());
@@ -155,57 +168,88 @@ public class ModelService {
         return response;
     }
 
+    private boolean userHasViewPermissionOnModel(UUID userId, UUID modelId) {
+        Model model = modelRepository.findById(modelId).orElseThrow(() -> new RuntimeException("Model with id " + modelId + " does not exist"));
+        boolean hasPermission = false;
+        GetUserResponse user = userService.getUser(userId);
+        GetUserModelPermissionsResponse userPermissions = userService.getUserModelPermissions(userId);
+        if (user.isAdminUser()) {
+            hasPermission = true;
+        } else {
+            for (UserModelPermissionDto permission : userPermissions.getUserModelPermissions()) {
+                if (permission.getModelId().equals(model.getId()) && permission.getPermission() == ModelPermission.VIEW_RECORDS) {
+                    hasPermission = true;
+                }
+            }
+        }
+        return hasPermission;
+    }
+
     @Transactional(readOnly = true)
     public GetModelResponse getModel(UUID modelId) {
+        return getModel(modelId, null , false);
+    }
+
+    @Transactional(readOnly = true)
+    public GetModelResponse getModel(UUID modelId, UUID userId, boolean doPermissionsCheck) {
         GetModelResponse response = new GetModelResponse();
         Model model = modelRepository.findById(modelId).orElseThrow(() -> new RuntimeException("Model not found: " + modelId));
-        //for(Model model: modelRepository.findAll()) {
-            ModelDto modelDto = new ModelDto();
-            modelDto.setId(model.getId());
-            modelDto.setDescription(model.getDescription());
-            modelDto.setName(model.getName());
-            response.setModel(modelDto);
 
-            //Get Field Info
-            List<Field> fieldOptional = fieldRepository.findByModelId(model.getId());
-            for (Field field: fieldOptional) {
-                FieldDto fieldDto = new FieldDto();
-                fieldDto.setId(field.getId());
-                fieldDto.setDescription(field.getDescription());
-                fieldDto.setName(field.getName());
-                fieldDto.setType(field.getType());
-                fieldDto.setIsParentField(field.getIsParentField());
-                fieldDto.setIsRequired(field.getIsRequired());
-                modelDto.getFields().add(fieldDto);
+        if (doPermissionsCheck) {
+            boolean hasPermission = userHasViewPermissionOnModel(userId, model.getId());
+            if (!hasPermission) {
+                throw new RuntimeException("User does not have permission to view records for model: " + model.getId());
             }
+        }
 
-            List<ModelLink> modelLinks = modelLinkRepository.findByEitherModelId(modelId);
-            for (ModelLink modelLink: modelLinks) {
-                if (modelId.equals(modelLink.getModel1Id())) {
-                    Model targetModel = modelRepository.findById(modelLink.getModel2Id()).orElseThrow(() -> new RuntimeException("Model not found: " + modelLink.getModel2Id()));
-                    ModelLinkTarget modelLinkTarget = new ModelLinkTarget();
-                    modelLinkTarget.setTargetModelId(modelLink.getModel2Id());
-                    modelLinkTarget.setCan_have_unlimited_targets(modelLink.isModel1CanHaveUnlimitedModel2s());
-                    modelLinkTarget.setCan_have_targets_count(modelLink.getModel1CanHaveSoManyModel2sCount());
-                    modelLinkTarget.setModelLinkId(modelLink.getId());
-                    modelLinkTarget.setTargetModelName(targetModel.getName());
+        ModelDto modelDto = new ModelDto();
+        modelDto.setId(model.getId());
+        modelDto.setDescription(model.getDescription());
+        modelDto.setName(model.getName());
+        response.setModel(modelDto);
+
+        //Get Field Info
+        List<Field> fieldOptional = fieldRepository.findByModelId(model.getId());
+        for (Field field: fieldOptional) {
+            FieldDto fieldDto = new FieldDto();
+            fieldDto.setId(field.getId());
+            fieldDto.setDescription(field.getDescription());
+            fieldDto.setName(field.getName());
+            fieldDto.setType(field.getType());
+            fieldDto.setIsParentField(field.getIsParentField());
+            fieldDto.setIsRequired(field.getIsRequired());
+            modelDto.getFields().add(fieldDto);
+        }
+
+        List<ModelLink> modelLinks = modelLinkRepository.findByEitherModelId(modelId);
+        for (ModelLink modelLink: modelLinks) {
+            if (modelId.equals(modelLink.getModel1Id())) {
+                Model targetModel = modelRepository.findById(modelLink.getModel2Id()).orElseThrow(() -> new RuntimeException("Model not found: " + modelLink.getModel2Id()));
+                ModelLinkTarget modelLinkTarget = new ModelLinkTarget();
+                modelLinkTarget.setTargetModelId(modelLink.getModel2Id());
+                modelLinkTarget.setCan_have_unlimited_targets(modelLink.isModel1CanHaveUnlimitedModel2s());
+                modelLinkTarget.setCan_have_targets_count(modelLink.getModel1CanHaveSoManyModel2sCount());
+                modelLinkTarget.setModelLinkId(modelLink.getId());
+                modelLinkTarget.setTargetModelName(targetModel.getName());
+                if (userHasViewPermissionOnModel(userId, targetModel.getId())) {
                     response.getModelLinkTargets().add(modelLinkTarget);
-                } else if (modelId.equals(modelLink.getModel2Id())) {
-                    Model targetModel = modelRepository.findById(modelLink.getModel1Id()).orElseThrow(() -> new RuntimeException("Model not found: " + modelLink.getModel2Id()));
-                    ModelLinkTarget modelLinkTarget = new ModelLinkTarget();
-                    modelLinkTarget.setTargetModelId(modelLink.getModel1Id());
-                    modelLinkTarget.setCan_have_unlimited_targets(modelLink.isModel2CanHaveUnlimitedModel1s());
-                    modelLinkTarget.setCan_have_targets_count(modelLink.getModel2CanHaveSoManyModel1sCount());
-                    modelLinkTarget.setModelLinkId(modelLink.getId());
+                }
+            } else if (modelId.equals(modelLink.getModel2Id())) {
+                Model targetModel = modelRepository.findById(modelLink.getModel1Id()).orElseThrow(() -> new RuntimeException("Model not found: " + modelLink.getModel2Id()));
+                ModelLinkTarget modelLinkTarget = new ModelLinkTarget();
+                modelLinkTarget.setTargetModelId(modelLink.getModel1Id());
+                modelLinkTarget.setCan_have_unlimited_targets(modelLink.isModel2CanHaveUnlimitedModel1s());
+                modelLinkTarget.setCan_have_targets_count(modelLink.getModel2CanHaveSoManyModel1sCount());
+                modelLinkTarget.setModelLinkId(modelLink.getId());
+                if (userHasViewPermissionOnModel(userId, targetModel.getId())) {
                     modelLinkTarget.setTargetModelName(targetModel.getName());
-                    response.getModelLinkTargets().add(modelLinkTarget);
-                } else {
-                    throw new IllegalStateException("Target Model ID cannot be null");
                 }
 
-
+                response.getModelLinkTargets().add(modelLinkTarget);
+            } else {
+                throw new IllegalStateException("Target Model ID cannot be null");
             }
-        //}
+        }
         return response;
     }
 
