@@ -132,6 +132,8 @@ public class ModelController {
         modelService.updateField(fieldId, updateModelRequest);
     }
 
-
-
+    @DeleteMapping("/models/{modelId}")
+    public void deleteModel(@PathVariable UUID modelId, @RequestParam(defaultValue = "false") boolean force) {
+        modelService.deleteModel(modelId, force);
+    }
 }

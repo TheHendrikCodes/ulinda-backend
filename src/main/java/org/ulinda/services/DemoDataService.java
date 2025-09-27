@@ -1,5 +1,6 @@
 package org.ulinda.services;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.ulinda.dto.CreateModelRequest;
@@ -23,6 +24,7 @@ import java.util.*;
 import java.util.Collections;
 
 @Service
+@Slf4j
 public class DemoDataService {
 
     @Autowired
@@ -96,12 +98,15 @@ public class DemoDataService {
 
     public void loadDemoData() {
         createModels();
+        log.info("Loading Demo Data...");
         loadEmployeeData();
         loadMotorbikeData();
         loadPayslipData();
+        log.info("Linking Demo Data...");
         loadTransactionData();
         linkEmployeesToPayslips();
         linkEmployeesToMotorbikes();
+        log.info("Demo Data Loaded!");
     }
 
     private void createModels() {

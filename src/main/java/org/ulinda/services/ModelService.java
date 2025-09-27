@@ -1530,6 +1530,79 @@ public class ModelService {
     }
 
     @Transactional
+    public void deleteModel(UUID modelId, boolean force) {
+        //Validate model id
+        modelRepository.findById(modelId).orElseThrow(() -> new IllegalArgumentException("Model not found"));
+
+
+
+        List<LinkedRecordCount> linkedRecordCounts = getLinkedRecordCounts(modelId);
+        for (LinkedRecordCount linkedRecordCount : linkedRecordCounts) {
+            // Check if records are linked to model, unless force is true
+            if (linkedRecordCount.getRecordCount() > 0) {
+                if (!force) {
+                    throw new FrontendException("Records are already linked", ErrorCode.MODEL_HAS_LINKED_RECORDS, true);
+                }
+            }
+        }
+
+        //DROP each model_link_ table associated with model
+        for (LinkedRecordCount linkedRecordCount : linkedRecordCounts) {
+            String sql = "DROP TABLE model_links_" + sanitizeIdentifier(linkedRecordCount.getLinkId().toString());
+            jdbcTemplate.execute(sql);
+        }
+        //now remove the model link entries
+        for (LinkedRecordCount linkedRecordCount : linkedRecordCounts) {
+            String sql = "DELETE FROM model_links WHERE id = ?";
+            jdbcTemplate.update(sql, linkedRecordCount.getLinkId());
+        }
+        //Now delete the records table
+        {
+            String sql = "DROP TABLE records_" + sanitizeIdentifier(modelId.toString());
+            jdbcTemplate.execute(sql);
+        }
+
+        //Delete the fields from fields table
+        {
+            String sql = "DELETE FROM fields WHERE model_id = ?";
+            jdbcTemplate.update(sql, modelId);
+        }
+
+        //Remove the model from models table
+        String sql = "DELETE FROM models WHERE id = ?";
+        jdbcTemplate.update(sql, modelId);
+
+    }
+
+    @Transactional(readOnly = true)
+    public List<LinkedRecordCount> getLinkedRecordCounts(UUID sourceModelId) {
+        List<ModelLink> modelLinks = modelLinkRepository.findByEitherModelId(sourceModelId);
+        List <LinkedRecordCount> linkedRecordCounts = new ArrayList<>();
+        UUID targetModelId;
+        for (ModelLink modelLink : modelLinks) {
+            if (modelLink.getModel1Id().equals(sourceModelId)) {
+                targetModelId = modelLink.getModel2Id();
+            } else if (modelLink.getModel2Id().equals(sourceModelId)) {
+                targetModelId = modelLink.getModel1Id();
+            } else {
+                throw new IllegalArgumentException("Invalid model id");
+            }
+            Model targetModel = modelRepository.findById(targetModelId).orElseThrow(() -> new IllegalArgumentException("Invalid model id"));
+            String sql = "SELECT count(*) FROM model_links_" + sanitizeIdentifier(modelLink.getId().toString());
+
+            long count = jdbcTemplate.queryForObject(sql, Long.class);
+
+            LinkedRecordCount linkedRecordCount = new LinkedRecordCount();
+            linkedRecordCount.setLinkId(modelLink.getId());
+            linkedRecordCount.setTargetModelName(targetModel.getName());
+            linkedRecordCount.setTargetModelId(targetModelId);
+            linkedRecordCount.setRecordCount(count);
+            linkedRecordCounts.add(linkedRecordCount);
+        }
+        return linkedRecordCounts;
+    }
+
+    @Transactional
     public void deleteRecordLink(UUID modelLinkId, UUID linkId) {
         //Check UUID's
         ModelLink modelLink = modelLinkRepository.findById(modelLinkId).orElseThrow(() -> new RuntimeException("modelLink not found"));
