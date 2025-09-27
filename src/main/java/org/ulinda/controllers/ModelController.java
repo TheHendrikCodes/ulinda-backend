@@ -117,8 +117,9 @@ public class ModelController {
     }
 
     @PostMapping("/records/link-records")
-    public void linkRecords(@Valid @RequestBody LinkRecordsRequest request) {
-        modelService.linkRecords(request);
+    public void linkRecords(@Valid @RequestBody LinkRecordsRequest request, Authentication authentication) {
+        UUID userId = authenticationHelper.getUserId(authentication);
+        modelService.linkRecords(userId, request, true);
     }
 
     @PostMapping("/fields/{modelId}")

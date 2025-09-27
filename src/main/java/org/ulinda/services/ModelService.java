@@ -1507,6 +1507,20 @@ public class ModelService {
 
     @Transactional
     public void linkRecords(LinkRecordsRequest request) {
+        linkRecords(null, request, false);
+    }
+
+    @Transactional
+    public void linkRecords(UUID userId, LinkRecordsRequest request, boolean doPermissionsCheck) {
+
+
+        // Perform permissions check
+        if (doPermissionsCheck) {
+            if (!userHasGivenPermissionOnModel(userId, request.getSourceModelId(), ModelPermission.VIEW_RECORDS)) {
+                throw new RuntimeException("User does not have permission to link records: Permissions Needed: VIEW records on model with ID: [" + request.getSourceModelId() + "]");
+            }
+        }
+
 
         UUID modelLinkId = request.getModelLinkId();
 
@@ -1524,6 +1538,13 @@ public class ModelService {
             targetModelId = modelLink.getModel1Id();
         }  else {
             throw new IllegalArgumentException("Invalid model Id");
+        }
+
+        // Perform permissions check
+        if (doPermissionsCheck) {
+            if (!userHasGivenPermissionOnModel(userId, targetModelId, ModelPermission.VIEW_RECORDS)) {
+                throw new RuntimeException("User does not have permission to link records: Permissions Needed: VIEW records on model with ID: [" +targetModelId + "]");
+            }
         }
 
         //Check if target model exists
