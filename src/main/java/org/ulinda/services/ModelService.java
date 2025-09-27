@@ -982,6 +982,8 @@ public class ModelService {
             for(LinkedRecordCount linkedRecordCount : moreThanZeroLinkedRecordCounts) {
                 modelsLinked += linkedRecordCount.getTargetModelName() + "; ";
                 if (modelsLinked.length() > 100) {
+                    modelsLinked = modelsLinked.substring(0, 100);
+                    modelsLinked = modelsLinked + " ....And potentially more models";
                     break;
                 }
             }
