@@ -58,8 +58,10 @@ public class ModelController {
     @PutMapping("/records/{modelId}/{recordId}")
     public ResponseEntity<RecordDto> updateRecord(@PathVariable UUID recordId,
                                                   @PathVariable UUID modelId,
-                                                  @RequestBody @Valid UpdateRecordRequest request) {
-        RecordDto updatedRecord = modelService.updateRecord(modelId, recordId, request.getFieldValues());
+                                                  @RequestBody @Valid UpdateRecordRequest request,
+                                                  Authentication authentication) {
+        UUID userId = authenticationHelper.getUserId(authentication);
+        RecordDto updatedRecord = modelService.updateRecord(userId, modelId, recordId, request.getFieldValues());
         return ResponseEntity.ok(updatedRecord);
     }
 

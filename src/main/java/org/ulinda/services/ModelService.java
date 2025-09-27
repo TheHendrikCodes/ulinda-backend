@@ -335,7 +335,12 @@ public class ModelService {
     }
 
     @Transactional
-    public RecordDto updateRecord(UUID modelId, UUID recordId, Map<UUID, Object> fieldValues) {
+    public RecordDto updateRecord(UUID userId, UUID modelId, UUID recordId, Map<UUID, Object> fieldValues) {
+
+        // Perform permissions check
+        if (!userHasGivenPermissionOnModel(userId, modelId, ModelPermission.EDIT_RECORDS)) {
+            throw new RuntimeException("User with ID: " + userId + " does not have permission to edit records for model: " + modelId);
+        }
 
         //Check if UUID exist
         modelRepository.findById(modelId).orElseThrow(() -> new RuntimeException("Model not found: " + modelId));
