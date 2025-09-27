@@ -1335,6 +1335,18 @@ public class ModelService {
     }
 
     @Transactional
+    public void deleteModelLink(DeleteModelLinkRequest updateLinkedModelsRequest) {
+        //Validate Model Link ID
+        ModelLink link = modelLinkRepository.findById(updateLinkedModelsRequest.getModelLinkId()).orElseThrow(() -> new RuntimeException("Link with id " + updateLinkedModelsRequest.getModelLinkId() + " does not exist"));
+        modelLinkRepository.deleteById(link.getId());
+
+        //Now delete the references table
+        String sql = "DROP TABLE model_links_" + sanitizeIdentifier(link.getId().toString());
+        jdbcTemplate.update(sql);
+    }
+
+
+    @Transactional
     public void deleteField(UUID fieldId) {
         // First check if the field exists
         Field field = fieldRepository.findById(fieldId).orElseThrow(() -> new IllegalArgumentException("Invalid field id"));

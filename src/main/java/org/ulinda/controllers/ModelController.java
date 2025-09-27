@@ -96,6 +96,11 @@ public class ModelController {
         modelService.updatelinkModels(updateLinkedModelsRequest);
     }
 
+    @DeleteMapping("/models/link-models")
+    public void deleteModelLink(@Valid @RequestBody DeleteModelLinkRequest deleteModelLinkRequest) {
+        modelService.deleteModelLink(deleteModelLinkRequest);
+    }
+
     @GetMapping("/models/link-models")
     public ResponseEntity<GetModelLinksResponse> getLinkedModels() {
         return ResponseEntity.ok(modelService.getModelLinks());
