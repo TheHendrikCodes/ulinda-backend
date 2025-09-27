@@ -85,8 +85,9 @@ public class ModelController {
     }
 
     @DeleteMapping("/model/linked-records/{modelLinkId}/{linkId}")
-    public void deleteLink(@PathVariable UUID modelLinkId, @PathVariable UUID linkId) {
-        modelService.deleteRecordLink(modelLinkId, linkId);
+    public void deleteLink(@PathVariable UUID modelLinkId, @PathVariable UUID linkId, Authentication authentication) {
+        UUID userId = authenticationHelper.getUserId(authentication);
+        modelService.deleteRecordLink(userId, modelLinkId, linkId);
     }
 
     @GetMapping("/models/link-models")

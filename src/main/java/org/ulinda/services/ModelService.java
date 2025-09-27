@@ -1702,9 +1702,18 @@ public class ModelService {
     }
 
     @Transactional
-    public void deleteRecordLink(UUID modelLinkId, UUID linkId) {
+    public void deleteRecordLink(UUID userId, UUID modelLinkId, UUID linkId) {
         //Check UUID's
         ModelLink modelLink = modelLinkRepository.findById(modelLinkId).orElseThrow(() -> new RuntimeException("modelLink not found"));
+
+        // Perform permissions check
+        if (!userHasGivenPermissionOnModel(userId, modelLink.getModel1Id(), ModelPermission.VIEW_RECORDS)) {
+            throw new RuntimeException("Cannot unlink records: User with ID: [" + userId + "] does not have VIEW permission on model with ID: [" + modelLink.getModel1Id() + "]");
+        }
+
+        if (!userHasGivenPermissionOnModel(userId, modelLink.getModel2Id(), ModelPermission.VIEW_RECORDS)) {
+            throw new RuntimeException("Cannot unlink records: User with ID: [" + userId + "] does not have VIEW permission on model with ID: [" + modelLink.getModel2Id() + "]");
+        }
 
         String sql = "SELECT EXISTS(SELECT 1 FROM model_links_" + sanitizeIdentifier(modelLinkId.toString()) + " WHERE id = ?)";
         Boolean exists = jdbcTemplate.queryForObject(sql, Boolean.class, linkId);
