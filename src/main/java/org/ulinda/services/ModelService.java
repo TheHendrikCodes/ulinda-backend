@@ -1312,17 +1312,17 @@ public class ModelService {
 
         log.debug("Model Link Indexes Created");
 
-        //Create foreign keys
+        //Create foreign keys with cascade delete
         String records1TableName = "records_" + sanitizeIdentifier(model1Id.toString());
         String records2TableName = "records_" + sanitizeIdentifier(model2Id.toString());
 
-        String foreignKey1 = "ALTER TABLE " + tableName + " ADD CONSTRAINT fk_record_1 FOREIGN KEY (record1_id) REFERENCES " + records1TableName + "(id)";
+        String foreignKey1 = "ALTER TABLE " + tableName + " ADD CONSTRAINT fk_record_1 FOREIGN KEY (record1_id) REFERENCES " + records1TableName + "(id) ON DELETE CASCADE";
         jdbcTemplate.execute(foreignKey1);
 
-        String foreignKey2 = "ALTER TABLE " + tableName + " ADD CONSTRAINT fk_record_2 FOREIGN KEY (record2_id) REFERENCES " + records2TableName + "(id)";
+        String foreignKey2 = "ALTER TABLE " + tableName + " ADD CONSTRAINT fk_record_2 FOREIGN KEY (record2_id) REFERENCES " + records2TableName + "(id) ON DELETE CASCADE";
         jdbcTemplate.execute(foreignKey2);
 
-        log.debug("Model links foreign keys created");
+        log.debug("Model links foreign keys created with cascade delete");
 
     }
 
