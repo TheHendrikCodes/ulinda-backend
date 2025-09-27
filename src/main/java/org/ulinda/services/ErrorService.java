@@ -63,6 +63,7 @@ public class ErrorService {
             throw new RuntimeException("No error found with ID: " + errorIdentfier);
         }
         ErrorDetailDto errorDetail = new ErrorDetailDto();
+        errorDetail.setErrorIdentifier(error.getErrorIdentifier());
         errorDetail.setTimestamp(error.getTimestamp());
         errorDetail.setMessage(error.getMessage());
         errorDetail.setStackTrace(error.getStackTrace());
