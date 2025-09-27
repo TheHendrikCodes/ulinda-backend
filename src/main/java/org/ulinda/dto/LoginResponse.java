@@ -9,6 +9,7 @@ public class LoginResponse {
     private String token;
     private long expiresIn;
     private boolean mustChangePassword;
+    private boolean adminUser;
 
     public LoginResponse(String token, String username, long expiresIn) {
         this.token = token;

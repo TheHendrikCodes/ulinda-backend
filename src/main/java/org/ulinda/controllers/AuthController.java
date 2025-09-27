@@ -46,6 +46,7 @@ public class AuthController {
             String token = jwtService.generateToken(userId.toString());
             userService.saveNewToken(userId, token);
             LoginResponse response = new LoginResponse(token, userId.toString(), jwtExpiration);
+            response.setAdminUser(user.isAdminUser());
             return ResponseEntity.ok(response);
         } else {
             throw new FrontendException("Invalid Credentials", ErrorCode.INVALID_LOGIN_CREDENTIALS, true);
