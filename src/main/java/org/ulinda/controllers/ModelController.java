@@ -68,8 +68,9 @@ public class ModelController {
 
     @DeleteMapping("/records/{modelId}/{recordId}")
     public void deleteRecord(@PathVariable UUID recordId,
-                                               @PathVariable UUID modelId) {
-        modelService.deleteRecord(modelId, recordId);
+                             @PathVariable UUID modelId,
+                             @RequestParam(defaultValue = "false") boolean overrideLinkedModelsError) {
+        modelService.deleteRecord(modelId, recordId, overrideLinkedModelsError);
     }
 
     @PostMapping("/models/{modelId}/records/search")

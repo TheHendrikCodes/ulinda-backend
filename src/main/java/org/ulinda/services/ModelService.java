@@ -12,6 +12,7 @@ import org.ulinda.entities.ModelLink;
 import org.ulinda.enums.FieldType;
 import org.ulinda.enums.QueryType;
 import org.ulinda.enums.SearchFieldType;
+import org.ulinda.exceptions.ErrorCode;
 import org.ulinda.exceptions.FrontendException;
 import org.ulinda.repositories.FieldRepository;
 import org.ulinda.repositories.ModelLinkRepository;
@@ -950,7 +951,7 @@ public class ModelService {
     }
 
     @Transactional
-    public void deleteRecord(UUID modelId, UUID recordId) {
+    public void deleteRecord(UUID modelId, UUID recordId, boolean overrideLinkedModelsError) {
         // Validate input
         if (recordId == null) {
             throw new IllegalArgumentException("Record ID cannot be null");
@@ -968,26 +969,27 @@ public class ModelService {
             throw new FrontendException("Record does not exist: " + recordId, true);
         }
 
-        List<LinkedRecordCount> linkedRecordCounts = getLinkedRecordCounts(modelId, recordId);
-        List<LinkedRecordCount> moreThanZeroLinkedRecordCounts = new ArrayList<>();
-
-        for (LinkedRecordCount linkedRecordCount : linkedRecordCounts) {
-            if (linkedRecordCount.getRecordCount() > 0) {
-                moreThanZeroLinkedRecordCounts.add(linkedRecordCount);
-            }
-        }
-
-        if (!moreThanZeroLinkedRecordCounts.isEmpty()) {
-            String modelsLinked = "";
-            for(LinkedRecordCount linkedRecordCount : moreThanZeroLinkedRecordCounts) {
-                modelsLinked += linkedRecordCount.getTargetModelName() + "; ";
-                if (modelsLinked.length() > 100) {
-                    modelsLinked = modelsLinked.substring(0, 100);
-                    modelsLinked = modelsLinked + " ....And potentially more models";
-                    break;
+        if (!overrideLinkedModelsError) {
+            List<LinkedRecordCount> linkedRecordCounts = getLinkedRecordCounts(modelId, recordId);
+            List<LinkedRecordCount> moreThanZeroLinkedRecordCounts = new ArrayList<>();
+            for (LinkedRecordCount linkedRecordCount : linkedRecordCounts) {
+                if (linkedRecordCount.getRecordCount() > 0) {
+                    moreThanZeroLinkedRecordCounts.add(linkedRecordCount);
                 }
             }
-            throw new FrontendException("Record has linked record(s) to :  " + modelsLinked , true);
+
+            if (!moreThanZeroLinkedRecordCounts.isEmpty()) {
+                String modelsLinked = "";
+                for (LinkedRecordCount linkedRecordCount : moreThanZeroLinkedRecordCounts) {
+                    modelsLinked += linkedRecordCount.getTargetModelName() + "; ";
+                    if (modelsLinked.length() > 100) {
+                        modelsLinked = modelsLinked.substring(0, 100);
+                        modelsLinked = modelsLinked + " ....And potentially more models";
+                        break;
+                    }
+                }
+                throw new FrontendException("Record has linked record(s) to :  " + modelsLinked, ErrorCode.RECORD_LINKED_TO_MODELS, true);
+            }
         }
 
         String sqlDelete = "DELETE FROM " + recordTableName + " WHERE id = ?";
