@@ -229,20 +229,8 @@ public class StartupService {
             
                 -- Foreign key constraints for referential integrity
                 CONSTRAINT fk_model_links_model_1_id FOREIGN KEY (model_1_id) REFERENCES models(id),
-                CONSTRAINT fk_model_links_model_2_id FOREIGN KEY (model_2_id) REFERENCES models(id),
-            
-                -- Ensure a model cannot be linked to itself
-                CONSTRAINT chk_different_models CHECK (model_1_id != model_2_id)
+                CONSTRAINT fk_model_links_model_2_id FOREIGN KEY (model_2_id) REFERENCES models(id)
             );
-            
-            -- Create unique index to prevent duplicates both ways
-            -- This ensures that if model A is linked to model B, you cannot create model B linked to model A
-            CREATE UNIQUE INDEX idx_model_links_unique_pair\s
-            ON model_links (LEAST(model_1_id, model_2_id), GREATEST(model_1_id, model_2_id));
-            
-            -- Add a comment to explain the table purpose
-            COMMENT ON TABLE model_links IS 'Links between models to establish relationships';
-            COMMENT ON INDEX idx_model_links_unique_pair IS 'Prevents duplicate links in both directions (A->B and B->A)';
         """;
         jdbcTemplate.execute(createSql);
     }
