@@ -2,17 +2,20 @@ package org.ulinda.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.ulinda.dto.ErrorDetailDto;
 import org.ulinda.dto.GetErrorsResponse;
 import org.ulinda.entities.ErrorLog;
 import org.ulinda.exceptions.ErrorResponse;
 import org.ulinda.repositories.ErrorRepository;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -52,5 +55,17 @@ public class ErrorService {
     public Page<ErrorLog> getErrors(Pageable pageable) {
         Page<ErrorLog> errors = errorRepository.findAll(pageable);
         return errors;
+    }
+
+    public ErrorDetailDto getErrorDetail(UUID errorIdentfier) {
+        ErrorLog error = errorRepository.findByErrorIdentifier(errorIdentfier);
+        if (error == null) {
+            throw new RuntimeException("No error found with ID: " + errorIdentfier);
+        }
+        ErrorDetailDto errorDetail = new ErrorDetailDto();
+        errorDetail.setTimestamp(error.getTimestamp());
+        errorDetail.setMessage(error.getMessage());
+        errorDetail.setStackTrace(error.getStackTrace());
+        return errorDetail;
     }
 }

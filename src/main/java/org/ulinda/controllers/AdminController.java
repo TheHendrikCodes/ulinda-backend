@@ -90,6 +90,12 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/error/{errorIdentifier}")
+    public ResponseEntity<ErrorDetailDto> getError(
+            @PathVariable UUID errorIdentifier) {
+        return ResponseEntity.ok(errorService.getErrorDetail(errorIdentifier));
+    }
+
     // Helper method to convert ErrorLog to ErrorDto
     private ErrorDto convertToDto(ErrorLog errorLog) {
         ErrorDto dto = new ErrorDto();

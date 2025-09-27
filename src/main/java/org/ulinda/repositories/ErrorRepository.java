@@ -7,4 +7,5 @@ import org.ulinda.entities.ErrorLog;
 import java.util.UUID;
 
 public interface ErrorRepository extends PagingAndSortingRepository<ErrorLog, UUID>, CrudRepository<ErrorLog, UUID> {
+    ErrorLog findByErrorIdentifier(UUID errorId);
 }
